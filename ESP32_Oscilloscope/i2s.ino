@@ -22,12 +22,24 @@ void configure_i2s(int rate) {
   SET_PERI_REG_MASK(SYSCON_SARADC_CTRL2_REG, SYSCON_SARADC_SAR1_INV);
   i2s_adc_enable(I2S_NUM_0);
 }
-
-void ADC_Sampling(uint16_t *i2s_buff){
+//Old Funtion
+/*void ADC_Sampling(uint16_t *i2s_buff){
   for (int i = 0; i < B_MULT; i++) {
     //TODO i2s_read_bytes is deprecated, replace with new function
     i2s_read_bytes(I2S_NUM_0, (char*)&i2s_buff[i * NUM_SAMPLES],  NUM_SAMPLES * sizeof(uint16_t), portMAX_DELAY);    
   }
+}*/
+//New Funtion
+void ADC_Sampling(uint16_t *i2s_buff){
+
+  size_t bytes_read; for (int i = 0; i < B_MULT; i++) {
+
+    i2s_read(I2S_NUM_0, (void*)&i2s_buff[i * NUM_SAMPLES], NUM_SAMPLES * sizeof(uint16_t), &bytes_read, portMAX_DELAY);
+
+    for(size_t ix = 0; ix < bytes_read/2; ix++) i2s_buff[(i * NUM_SAMPLES) + ix] &= 0x0FFF; // 16bit to 12bit conversion 
+
+  }
+
 }
 
 void set_sample_rate(uint32_t rate) {
